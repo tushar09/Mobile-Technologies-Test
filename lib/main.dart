@@ -6,16 +6,15 @@ import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 void main() {
-  runApp(const MaterialApp(home: MyApp(),));
+  runApp(const MaterialApp(
+    home: MyApp(),
+  ));
 }
 
 class MyApp extends StatefulWidget {
-
   const MyApp({Key? key}) : super(key: key);
 
-  getImeiNumber() {
-
-  }
+  getImeiNumber() {}
 
   @override
   State<StatefulWidget> createState() {
@@ -23,12 +22,16 @@ class MyApp extends StatefulWidget {
   }
 }
 
-
-class App extends State<MyApp>{
-
-  TextEditingController imeController = TextEditingController(text: "");
+class App extends State<MyApp> {
+  TextEditingController imeCtrl = TextEditingController(text: "");
+  TextEditingController firstNameCtrl = TextEditingController(text: "");
+  TextEditingController lastNameCtrl = TextEditingController(text: "");
+  TextEditingController dateOfBirthCtrl = TextEditingController(text: "");
+  TextEditingController passportCtrl = TextEditingController(text: "");
+  TextEditingController emailCtrl = TextEditingController(text: "");
 
   String imeiNumber = "";
+  bool is18Plus = false;
 
   @override
   void initState() {
@@ -37,7 +40,6 @@ class App extends State<MyApp>{
 
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -62,7 +64,7 @@ class App extends State<MyApp>{
             child: Column(
               children: [
                 TextFormField(
-                  controller: imeController,
+                  controller: imeCtrl,
                   decoration: const InputDecoration(
                     labelText: 'IMEI Number',
                     border: OutlineInputBorder(),
@@ -70,7 +72,7 @@ class App extends State<MyApp>{
                 ),
                 SizedBox(height: 20),
                 TextFormField(
-                  controller: imeController,
+                  controller: firstNameCtrl,
                   decoration: const InputDecoration(
                     labelText: 'First name',
                     border: OutlineInputBorder(),
@@ -78,7 +80,7 @@ class App extends State<MyApp>{
                 ),
                 SizedBox(height: 20),
                 TextFormField(
-                  controller: imeController,
+                  controller: lastNameCtrl,
                   decoration: const InputDecoration(
                     labelText: 'Last name',
                     border: OutlineInputBorder(),
@@ -88,8 +90,8 @@ class App extends State<MyApp>{
                 TextFormField(
                   enableInteractiveSelection: false,
                   readOnly: true,
-                  controller: imeController,
-                  onTap: (){
+                  controller: dateOfBirthCtrl,
+                  onTap: () {
                     _selectDate(context);
                   },
                   decoration: const InputDecoration(
@@ -97,24 +99,29 @@ class App extends State<MyApp>{
                     border: OutlineInputBorder(),
                   ),
                 ),
-                SizedBox(height: 20),
-                TextFormField(
-                  controller: imeController,
-                  decoration: const InputDecoration(
-                    labelText: 'Passport',
-                    border: OutlineInputBorder(),
+                Visibility(
+                  visible: is18Plus,
+                  child: SizedBox(height: 20)),
+                Visibility(
+                  visible: is18Plus,
+                  child: TextFormField(
+                    controller: passportCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Passport',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 SizedBox(height: 20),
                 TextFormField(
-                  controller: imeController,
+                  controller: emailCtrl,
                   decoration: const InputDecoration(
                     labelText: 'Email',
                     border: OutlineInputBorder(),
                   ),
                 ),
                 SizedBox(height: 20),
-                RaisedButton(onPressed: (){
+                RaisedButton(onPressed: () {
                   print("sDFdf");
                   askPermission();
                 })
@@ -135,12 +142,11 @@ class App extends State<MyApp>{
     try {
       String imei = await DeviceInformation.deviceIMEINumber;
       setState(() {
-        imeController.text = imei;
+        imeCtrl.text = imei;
       });
     } on PlatformException catch (e) {
       print("App " + '${e.message}');
     }
-
   }
 
   Future<void> askPermission() async {
@@ -154,8 +160,8 @@ class App extends State<MyApp>{
     DateTime selectedDate = DateTime.now();
     final DateTime? picked = await showDatePicker(
         context: context,
-        initialDate: selectedDate,
-        firstDate: DateTime(2015, 8),
+        firstDate: DateTime(1990, 8),
+        initialDate: DateTime(1990, 9),
         lastDate: DateTime(2101));
     if (picked != null && picked != selectedDate) {
       setState(() {
