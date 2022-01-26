@@ -164,8 +164,9 @@ class App extends State<MyApp> {
         initialDate: DateTime(1990, 9),
         lastDate: DateTime(2101));
     if (picked != null && picked != selectedDate) {
+      print(DateTime.now().millisecondsSinceEpoch);
       setState(() {
-        selectedDate = picked;
+        is18Plus = DateTime.now().millisecondsSinceEpoch - picked.millisecondsSinceEpoch > 568036800000;
       });
     }
   }
