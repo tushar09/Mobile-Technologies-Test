@@ -64,6 +64,7 @@ class App extends State<MyApp> {
             child: Column(
               children: [
                 TextFormField(
+                  textInputAction: TextInputAction.next,
                   controller: imeCtrl,
                   decoration: const InputDecoration(
                     labelText: 'IMEI Number',
@@ -72,6 +73,7 @@ class App extends State<MyApp> {
                 ),
                 SizedBox(height: 20),
                 TextFormField(
+                  textInputAction: TextInputAction.next,
                   controller: firstNameCtrl,
                   decoration: const InputDecoration(
                     labelText: 'First name',
@@ -80,6 +82,7 @@ class App extends State<MyApp> {
                 ),
                 SizedBox(height: 20),
                 TextFormField(
+                  textInputAction: TextInputAction.next,
                   controller: lastNameCtrl,
                   decoration: const InputDecoration(
                     labelText: 'Last name',
@@ -88,6 +91,7 @@ class App extends State<MyApp> {
                 ),
                 SizedBox(height: 20),
                 TextFormField(
+                  textInputAction: TextInputAction.next,
                   enableInteractiveSelection: false,
                   readOnly: true,
                   controller: dateOfBirthCtrl,
@@ -105,6 +109,7 @@ class App extends State<MyApp> {
                 Visibility(
                   visible: is18Plus,
                   child: TextFormField(
+                  textInputAction: TextInputAction.next,
                     controller: passportCtrl,
                     decoration: const InputDecoration(
                       labelText: 'Passport',
@@ -114,6 +119,8 @@ class App extends State<MyApp> {
                 ),
                 SizedBox(height: 20),
                 TextFormField(
+                  keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.done,
                   controller: emailCtrl,
                   decoration: const InputDecoration(
                     labelText: 'Email',
@@ -121,10 +128,17 @@ class App extends State<MyApp> {
                   ),
                 ),
                 SizedBox(height: 20),
-                RaisedButton(onPressed: () {
-                  print("sDFdf");
-                  askPermission();
-                })
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: Size.fromHeight(40), // fromHeight use double.infinity as width and 40 is the height
+                  ),
+                  onPressed: () {},
+                  child: Text('Submit'),
+                )
+                // RaisedButton(onPressed: () {
+                //   print("sDFdf");
+                //   askPermission();
+                // })
               ],
             ),
           ),
