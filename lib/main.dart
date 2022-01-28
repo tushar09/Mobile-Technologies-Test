@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:device_information/device_information.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 void main() {
@@ -33,6 +34,8 @@ class App extends State<MyApp> {
   String imeiNumber = "";
   bool is18Plus = false;
 
+  final formGlobalKey = GlobalKey < FormState > ();
+
   @override
   void initState() {
     initPlatformState();
@@ -58,88 +61,134 @@ class App extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Welcome to Flutter'),
         ),
-        body: Padding(
-          padding: EdgeInsets.all(8.0),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                TextFormField(
-                  textInputAction: TextInputAction.next,
-                  controller: imeCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'IMEI Number',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                SizedBox(height: 20),
-                TextFormField(
-                  textInputAction: TextInputAction.next,
-                  controller: firstNameCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'First name',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                SizedBox(height: 20),
-                TextFormField(
-                  textInputAction: TextInputAction.next,
-                  controller: lastNameCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Last name',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                SizedBox(height: 20),
-                TextFormField(
-                  textInputAction: TextInputAction.next,
-                  enableInteractiveSelection: false,
-                  readOnly: true,
-                  controller: dateOfBirthCtrl,
-                  onTap: () {
-                    _selectDate(context);
-                  },
-                  decoration: const InputDecoration(
-                    labelText: 'Date of birth',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                Visibility(
-                  visible: is18Plus,
-                  child: SizedBox(height: 20)),
-                Visibility(
-                  visible: is18Plus,
-                  child: TextFormField(
-                  textInputAction: TextInputAction.next,
-                    controller: passportCtrl,
+        body: Form(
+          key: formGlobalKey,
+          child: Padding(
+            padding: EdgeInsets.all(8.0),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  TextFormField(
+                    validator: (imei){
+                      if(imei == null || imei.trim().isEmpty){
+                        return "Please enter your IMEI number";
+                      }
+                      return null;
+                    },
+                    textInputAction: TextInputAction.next,
+                    controller: imeCtrl,
                     decoration: const InputDecoration(
-                      labelText: 'Passport',
+                      labelText: 'IMEI Number',
                       border: OutlineInputBorder(),
                     ),
                   ),
-                ),
-                SizedBox(height: 20),
-                TextFormField(
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.done,
-                  controller: emailCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(),
+                  SizedBox(height: 20),
+                  TextFormField(
+                    validator: (fn){
+                      if(fn == null || fn.trim().isEmpty){
+                        return "Please enter your first name";
+                      }
+                      return null;
+                    },
+                    textInputAction: TextInputAction.next,
+                    controller: firstNameCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'First name',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: Size.fromHeight(40), // fromHeight use double.infinity as width and 40 is the height
+                  SizedBox(height: 20),
+                  TextFormField(
+                    validator: (ln){
+                      if(ln == null || ln.trim().isEmpty){
+                        return "Please enter your last name";
+                      }
+                      return null;
+                    },
+                    textInputAction: TextInputAction.next,
+                    controller: lastNameCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Last name',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
-                  onPressed: () {},
-                  child: Text('Submit'),
-                )
-                // RaisedButton(onPressed: () {
-                //   print("sDFdf");
-                //   askPermission();
-                // })
-              ],
+                  SizedBox(height: 20),
+                  TextFormField(
+                    validator: (dob){
+                      if(dob == null || dob.trim().isEmpty){
+                        return "Please select your date of birth";
+                      }
+                      return null;
+                    },
+                    textInputAction: TextInputAction.next,
+                    enableInteractiveSelection: false,
+                    readOnly: true,
+                    controller: dateOfBirthCtrl,
+                    onTap: () {
+                      _selectDate(context);
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Date of birth',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  Visibility(
+                    visible: is18Plus,
+                    child: SizedBox(height: 20)),
+                  Visibility(
+                    visible: is18Plus,
+                    child: TextFormField(
+                      validator: (pp){
+                        if((pp == null || pp.trim().isEmpty) && is18Plus){
+                          return "Please enter your passport number";
+                        }
+                        return null;
+                      },
+                    textInputAction: TextInputAction.next,
+                      controller: passportCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Passport',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  TextFormField(
+                    validator: (pp){
+                      if((pp != null && pp.isNotEmpty)){
+                        //bool emailValid = ;
+                        if(!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(pp)){
+                          return "Invalid email";
+                        }
+                      }
+                      return null;
+                    },
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.done,
+                    controller: emailCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: Size.fromHeight(40), // fromHeight use double.infinity as width and 40 is the height
+                    ),
+                    onPressed: () {
+                      if (formGlobalKey.currentState!.validate()) {
+
+                      }
+                    },
+                    child: Text('Submit'),
+                  )
+                  // RaisedButton(onPressed: () {
+                  //   print("sDFdf");
+                  //   askPermission();
+                  // })
+                ],
+              ),
             ),
           ),
         ),
@@ -181,7 +230,13 @@ class App extends State<MyApp> {
       print(DateTime.now().millisecondsSinceEpoch);
       setState(() {
         is18Plus = DateTime.now().millisecondsSinceEpoch - picked.millisecondsSinceEpoch > 568036800000;
+        dateOfBirthCtrl.text = DateFormat('dd/MM/yyyy').format(selectedDate).toString();
+        print(is18Plus);
       });
     }
+  }
+
+  void validateData() {
+
   }
 }
