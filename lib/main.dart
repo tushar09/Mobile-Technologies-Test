@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:device_information/device_information.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -33,6 +34,8 @@ class App extends State<MyApp> {
 
   String imeiNumber = "";
   bool is18Plus = false;
+  ImagePicker picker = ImagePicker();
+  late File imageFile = File("");
 
   final formGlobalKey = GlobalKey < FormState > ();
 
@@ -172,6 +175,37 @@ class App extends State<MyApp> {
                     ),
                   ),
                   SizedBox(height: 20),
+                  GestureDetector(
+                    onTap: (){
+                      takeImage();
+                    },
+                    child: Container(
+                        alignment: imageFile.path == "" ? Alignment.centerLeft : Alignment.center,
+                        width: double.infinity,
+                        height: imageFile.path == "" ? 50 : 200,
+                        decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Colors.red,
+                            ),
+                            borderRadius: BorderRadius.all(Radius.circular(4))
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Image.file(imageFile, errorBuilder:
+                              (BuildContext context, Object exception, StackTrace? stackTrace) {
+                            // Appropriate logging or analytics, e.g.
+                            // myAnalytics.recordError(
+                            //   'An error occurred loading "https://example.does.not.exist/image.jpg"',
+                            //   exception,
+                            //   stackTrace,
+                            // );
+                            return const Text("Please take image");
+                          }),
+                        )
+                        //child: FadeInImage..assetNetwork(placeholder: 'assets/use.png', image: imageFile.path)
+                    ),
+                  ),
+                  SizedBox(height: 20),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       minimumSize: Size.fromHeight(40), // fromHeight use double.infinity as width and 40 is the height
@@ -180,6 +214,7 @@ class App extends State<MyApp> {
                       if (formGlobalKey.currentState!.validate()) {
 
                       }
+
                     },
                     child: Text('Submit'),
                   )
@@ -238,5 +273,12 @@ class App extends State<MyApp> {
 
   void validateData() {
 
+  }
+
+  Future<void> takeImage() async {
+    XFile? image = await picker.pickImage(source: ImageSource.camera);
+    setState(() {
+      imageFile = File(image!.path);
+    });
   }
 }
