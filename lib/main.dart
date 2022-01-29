@@ -3,9 +3,13 @@ import 'dart:io';
 import 'package:device_information/device_information.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile_technologies/databse_connection.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:sqflite/sqflite.dart';
 
 void main() {
   runApp(const MaterialApp(
@@ -16,8 +20,6 @@ void main() {
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  getImeiNumber() {}
-
   @override
   State<StatefulWidget> createState() {
     return App();
@@ -26,18 +28,22 @@ class MyApp extends StatefulWidget {
 
 class App extends State<MyApp> {
   TextEditingController imeCtrl = TextEditingController(text: "");
-  TextEditingController firstNameCtrl = TextEditingController(text: "");
-  TextEditingController lastNameCtrl = TextEditingController(text: "");
-  TextEditingController dateOfBirthCtrl = TextEditingController(text: "");
-  TextEditingController passportCtrl = TextEditingController(text: "");
-  TextEditingController emailCtrl = TextEditingController(text: "");
+  TextEditingController firstNameCtrl = TextEditingController(text: "Tushar");
+  TextEditingController lastNameCtrl = TextEditingController(text: "Monirul");
+  TextEditingController dateOfBirthCtrl = TextEditingController(text: "01/01/1995");
+  TextEditingController passportCtrl = TextEditingController(text: "1234");
+  TextEditingController emailCtrl = TextEditingController(text: "wtushar09@gmail.com");
 
   String imeiNumber = "";
   bool is18Plus = false;
   ImagePicker picker = ImagePicker();
   late File imageFile = File("");
-
   final formGlobalKey = GlobalKey < FormState > ();
+
+  String lat = "";
+  String lng = "";
+
+  static Database? db;
 
   @override
   void initState() {
@@ -62,7 +68,7 @@ class App extends State<MyApp> {
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Welcome to Flutter'),
+          title: const Text('Mobile Technologies Test'),
         ),
         body: Form(
           key: formGlobalKey,
@@ -71,6 +77,7 @@ class App extends State<MyApp> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
+                  SizedBox(height: 20),
                   TextFormField(
                     validator: (imei){
                       if(imei == null || imei.trim().isEmpty){
@@ -185,7 +192,7 @@ class App extends State<MyApp> {
                         height: imageFile.path == "" ? 50 : 200,
                         decoration: BoxDecoration(
                             border: Border.all(
-                              color: Colors.red,
+                              color: Colors.blue,
                             ),
                             borderRadius: BorderRadius.all(Radius.circular(4))
                         ),
@@ -212,7 +219,8 @@ class App extends State<MyApp> {
                     ),
                     onPressed: () {
                       if (formGlobalKey.currentState!.validate()) {
-
+                        //print("adf");
+                        storeUser();
                       }
 
                     },
@@ -232,11 +240,22 @@ class App extends State<MyApp> {
   }
 
   Future<void> initPlatformState() async {
+
     Map<Permission, PermissionStatus> statuses = await [
+      Permission.phone,
       Permission.locationWhenInUse,
+      Permission.camera,
     ].request();
 
     print(statuses[Permission.locationWhenInUse].toString() + "hhjmnb");
+
+    if (await Permission.location.isGranted) {
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      lat = position.latitude.toString();
+      lng = position.longitude.toString();
+      print(position.latitude.toString() + " " + position.longitude.toString());
+    }
+
     try {
       String imei = await DeviceInformation.deviceIMEINumber;
       setState(() {
@@ -249,7 +268,9 @@ class App extends State<MyApp> {
 
   Future<void> askPermission() async {
     Map<Permission, PermissionStatus> statuses = await [
+      Permission.phone,
       Permission.locationWhenInUse,
+      Permission.camera,
     ].request();
     print(statuses[Permission.locationWhenInUse].toString() + "vxb");
   }
@@ -260,12 +281,12 @@ class App extends State<MyApp> {
         context: context,
         firstDate: DateTime(1990, 8),
         initialDate: DateTime(1990, 9),
-        lastDate: DateTime(2101));
+        lastDate: DateTime.now());
     if (picked != null && picked != selectedDate) {
       print(DateTime.now().millisecondsSinceEpoch);
       setState(() {
         is18Plus = DateTime.now().millisecondsSinceEpoch - picked.millisecondsSinceEpoch > 568036800000;
-        dateOfBirthCtrl.text = DateFormat('dd/MM/yyyy').format(selectedDate).toString();
+        dateOfBirthCtrl.text = DateFormat('dd/MM/yyyy').format(picked).toString();
         print(is18Plus);
       });
     }
@@ -279,6 +300,93 @@ class App extends State<MyApp> {
     XFile? image = await picker.pickImage(source: ImageSource.camera);
     setState(() {
       imageFile = File(image!.path);
+      print(imageFile.path);
     });
+  }
+
+  void storeUser() async{
+    if(lat.isEmpty){
+      if (await Permission.locationWhenInUse.isGranted) {
+        Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+        lat = position.latitude.toString();
+        lng = position.longitude.toString();
+      }else if (await Permission.location.isPermanentlyDenied) {
+        Fluttertoast.showToast(
+            msg: "PLease allow location permission from setting",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0
+        );
+      }else{
+        Map<Permission, PermissionStatus> statuses = await [
+          Permission.locationWhenInUse,
+        ].request();
+      }
+      return;
+    }else{
+
+    }
+
+    if(imageFile.path.isEmpty){
+      Fluttertoast.showToast(
+          msg: "Please take image",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0
+      );
+      return;
+    }
+    Database db = await DatabaseConnection().setDatabase();
+    final Map<String, String> user = {
+      "imei": imeCtrl.text,
+      "firstName": firstNameCtrl.text,
+      "lastName": lastNameCtrl.text,
+      "dob": dateOfBirthCtrl.text,
+      "passport": passportCtrl.text,
+      "email": emailCtrl.text,
+      "picture": imageFile.path,
+      "lat": lat,
+      "lng": lng,
+    };
+    try{
+      await db.insert("user", user);
+      Fluttertoast.showToast(
+          msg: "User created successfully",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.black38,
+          textColor: Colors.white,
+          fontSize: 16.0
+      );
+      formGlobalKey.currentState!.reset();
+      imeCtrl.text = "";
+      firstNameCtrl.text = "";
+      lastNameCtrl.text = "";
+      dateOfBirthCtrl.text = "";
+      passportCtrl.text = "";
+      emailCtrl.text = "";
+      setState(() {
+        imageFile = File("");
+      });
+    }on DatabaseException{
+      Fluttertoast.showToast(
+          msg: "Duplicate imei number",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0
+      );
+      print("e.toString()");
+    }
+
   }
 }
